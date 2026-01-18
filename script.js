@@ -9,9 +9,21 @@
     // DOM Elements
     const diceButtons = document.querySelectorAll('.die');
     const rollBtn = document.getElementById('roll-btn');
+    const resetBtn = document.getElementById('reset-btn');
     const soundToggle = document.getElementById('sound-toggle');
     const historyList = document.getElementById('history-list');
     const clearHistoryBtn = document.getElementById('clear-history');
+
+    // Default face values for each die type
+    const DEFAULT_FACE_VALUES = {
+        'd4': '4',
+        'd6': '6',
+        'd8': '8',
+        'd10': '0',
+        'd12': '12',
+        'd20': '20',
+        'd100': '00'
+    };
 
     // State
     let selectedDice = new Set();
@@ -43,6 +55,9 @@
 
         // Roll button
         rollBtn.addEventListener('click', handleRoll);
+
+        // Reset button
+        resetBtn.addEventListener('click', handleReset);
 
         // Sound toggle
         soundToggle.addEventListener('click', handleSoundToggle);
@@ -110,33 +125,29 @@
         // Remove any previous result state
         diceButtons.forEach(die => die.classList.remove('result'));
 
-        // Start rolling animation
-        selectedDiceElements.forEach(die => {
-            die.classList.add('rolling');
-            animateNumbers(die);
+        // Pre-generate final results for all dice
+        const results = selectedDiceElements.map(die => {
+            const dieType = die.dataset.die;
+            const sides = parseInt(die.dataset.sides, 10);
+            const result = rollDie(dieType, sides);
+            return { die: dieType, result, element: die };
         });
 
-        // After animation completes
+        // Start rolling animation with pre-determined final values
+        results.forEach(({ die, result, element }) => {
+            element.classList.add('rolling');
+            animateNumbers(element, die, result);
+        });
+
+        // After animation completes - just handle UI state
         setTimeout(() => {
-            const results = [];
-
-            selectedDiceElements.forEach(die => {
-                die.classList.remove('rolling');
-                die.classList.add('result');
-
-                const dieType = die.dataset.die;
-                const sides = parseInt(die.dataset.sides, 10);
-                const result = rollDie(dieType, sides);
-
-                // Update the displayed value
-                const valueEl = die.querySelector('.die-value');
-                valueEl.textContent = formatResult(dieType, result);
-
-                results.push({ die: dieType, result });
+            results.forEach(({ element }) => {
+                element.classList.remove('rolling');
+                element.classList.add('result');
             });
 
-            // Add to history
-            addToHistory(results);
+            // Add to history (results already contain die type and result)
+            addToHistory(results.map(({ die, result }) => ({ die, result })));
 
             isRolling = false;
             updateRollButtonState();
@@ -144,13 +155,18 @@
     }
 
     /**
-     * Animate random numbers on a die during roll
-     * @param {HTMLElement} die - The die element
+     * Animate random numbers on a die during roll, ending with final result
+     * @param {HTMLElement} dieElement - The die button element
+     * @param {string} dieType - Type of die (d4, d6, etc.)
+     * @param {number} finalResult - The pre-determined final result to show
      */
-    function animateNumbers(die) {
-        const valueEl = die.querySelector('.die-value');
-        const dieType = die.dataset.die;
-        const sides = parseInt(die.dataset.sides, 10);
+    function animateNumbers(dieElement, dieType, finalResult) {
+        const valueEl = dieElement.querySelector('.die-value');
+        const sides = parseInt(dieElement.dataset.sides, 10);
+
+        // Show random numbers for ANIMATION_STEPS - 1 iterations
+        // Then show final result exactly at ROLL_DURATION
+        const randomSteps = ANIMATION_STEPS - 1;
         const stepDuration = ROLL_DURATION / ANIMATION_STEPS;
 
         let step = 0;
@@ -159,10 +175,15 @@
             const randomResult = rollDie(dieType, sides);
             valueEl.textContent = formatResult(dieType, randomResult);
 
-            if (step >= ANIMATION_STEPS - 1) {
+            if (step >= randomSteps) {
                 clearInterval(interval);
             }
         }, stepDuration);
+
+        // Set the final result exactly at ROLL_DURATION
+        setTimeout(() => {
+            valueEl.textContent = formatResult(dieType, finalResult);
+        }, ROLL_DURATION);
     }
 
     /**
@@ -347,6 +368,35 @@
     function handleClearHistory() {
         historyList.innerHTML = '<p class="history-empty">No rolls yet. Select dice and roll!</p>';
         rollCount = 0;
+    }
+
+    /**
+     * Handle reset - restore app to initial state
+     */
+    function handleReset() {
+        if (isRolling) return;
+
+        // Deselect all dice and reset their face values
+        diceButtons.forEach(die => {
+            const dieType = die.dataset.die;
+
+            // Remove selection
+            die.classList.remove('selected', 'result');
+            die.setAttribute('aria-pressed', 'false');
+
+            // Reset face value to default
+            const valueEl = die.querySelector('.die-value');
+            valueEl.textContent = DEFAULT_FACE_VALUES[dieType];
+        });
+
+        // Clear selection state
+        selectedDice.clear();
+
+        // Clear history
+        handleClearHistory();
+
+        // Update roll button state
+        updateRollButtonState();
     }
 
     // Initialize when DOM is ready

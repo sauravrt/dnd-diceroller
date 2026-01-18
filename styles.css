@@ -715,6 +715,38 @@ body::before {
     padding: 1rem;
 }
 
+/* Reset Button */
+.reset-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+    background: transparent;
+    border: 2px solid var(--accent-gold-dark);
+    border-radius: 6px;
+    padding: 0.6rem 1.25rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.reset-btn:hover {
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+    background: rgba(201, 169, 97, 0.1);
+}
+
+.reset-btn:active {
+    transform: scale(0.98);
+}
+
+.reset-btn:focus-visible {
+    outline: 2px solid var(--accent-gold);
+    outline-offset: 2px;
+}
+
+/* Roll Button */
 .roll-btn {
     font-family: 'Cinzel', serif;
     font-size: 1.25rem;

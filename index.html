@@ -55,7 +55,7 @@
                     <button class="die" data-die="d10" data-sides="10" aria-label="10-sided die" aria-pressed="false">
                         <div class="die-inner die-d10">
                             <div class="die-face">
-                                <span class="die-value">10</span>
+                                <span class="die-value">0</span>
                             </div>
                         </div>
                         <span class="die-label">d10</span>
@@ -85,7 +85,7 @@
                     <button class="die" data-die="d100" data-sides="100" aria-label="100-sided percentile die" aria-pressed="false">
                         <div class="die-inner die-d100">
                             <div class="die-face">
-                                <span class="die-value">100</span>
+                                <span class="die-value">00</span>
                             </div>
                         </div>
                         <span class="die-label">d100</span>
@@ -95,6 +95,7 @@
 
             <!-- Controls -->
             <section class="controls" aria-label="Roll controls">
+                <button class="reset-btn" id="reset-btn" aria-label="Reset all dice">Reset</button>
                 <button class="roll-btn" id="roll-btn" disabled aria-label="Roll selected dice">
                     <span class="roll-btn-text">Roll Dice</span>
                 </button>
